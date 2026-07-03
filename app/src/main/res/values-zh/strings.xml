@@ -67,6 +67,8 @@
     <string name="log_service_start">服务手动启动。</string>
     <string name="log_service_stop">服务手动停止。</string>
     <string name="log_sms_received">收到来自 %1$s 的短信，正在转发...</string>
+    <string name="log_sms_received_raw">【接收短信】来自 %1$s: %2$s</string>
+    <string name="log_sms_received_raw_disabled">【接收短信(服务已关闭)】来自 %1$s: %2$s</string>
     <string name="log_sms_success">成功转发来自 %1$s 的短信</string>
     <string name="log_sms_failed">转发来自 %1$s 的短信失败: %2$s</string>
     <string name="log_sms_incomplete">转发来自 %1$s 的短信失败: 发信参数配置不完整。</string>

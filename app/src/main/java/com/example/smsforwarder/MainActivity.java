@@ -148,6 +148,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        TextView appTitle = findViewById(R.id.app_title);
+        if (appTitle != null) {
+            try {
+                String versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+                appTitle.setText(getString(R.string.app_name) + " v" + versionName);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         tvStatus = findViewById(R.id.tv_status);
         switchService = findViewById(R.id.switch_service);
         btnRequestPermission = findViewById(R.id.btn_request_permission);
@@ -577,12 +587,20 @@ public class MainActivity extends AppCompatActivity {
             tvStatus.setTextColor(ContextCompat.getColor(this, android.R.color.holo_green_dark));
             switchService.setChecked(true);
         } else {
-            tvStatus.setText(getString(R.string.status_stopped));
-            tvStatus.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark));
-            // Sync switch position if it stopped unexpectedly
-            if (configManager.isEnabled() && !isServiceRunning) {
+            // If the user enabled it but the service isn't running (e.g. killed by OS), restart it!
+            if (configManager.isEnabled()) {
+                startForwardingService();
+                isServiceRunning = isServiceRunning(SmsForwardingService.class);
+            }
+
+            if (isServiceRunning) {
+                tvStatus.setText(getString(R.string.status_running));
+                tvStatus.setTextColor(ContextCompat.getColor(this, android.R.color.holo_green_dark));
+                switchService.setChecked(true);
+            } else {
+                tvStatus.setText(getString(R.string.status_stopped));
+                tvStatus.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark));
                 switchService.setChecked(false);
-                configManager.setEnabled(false);
             }
         }
     }

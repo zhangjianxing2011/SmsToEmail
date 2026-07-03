@@ -24,6 +24,7 @@ public class SmsForwardingService extends Service {
     private static final int NOTIFICATION_ID = 1;
 
     public static volatile boolean isRunning = false;
+    private SmsReceiver smsReceiver;
 
     @Override
     public void onCreate() {
@@ -31,6 +32,21 @@ public class SmsForwardingService extends Service {
         Log.d(TAG, "Service onCreate");
         isRunning = true;
         createNotificationChannel();
+
+        // Dynamically register SmsReceiver for high-priority lock screen broadcast delivery
+        try {
+            smsReceiver = new SmsReceiver();
+            IntentFilter filter = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
+            filter.setPriority(999);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(smsReceiver, filter, Context.RECEIVER_EXPORTED);
+            } else {
+                registerReceiver(smsReceiver, filter);
+            }
+            Log.d(TAG, "SmsReceiver dynamically registered.");
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to register SmsReceiver dynamically", e);
+        }
     }
 
     @Override
@@ -59,6 +75,16 @@ public class SmsForwardingService extends Service {
     public void onDestroy() {
         Log.d(TAG, "Service onDestroy");
         isRunning = false;
+
+        if (smsReceiver != null) {
+            try {
+                unregisterReceiver(smsReceiver);
+                Log.d(TAG, "SmsReceiver dynamically unregistered.");
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to unregister SmsReceiver dynamically", e);
+            }
+        }
+
         super.onDestroy();
     }
 
@@ -101,7 +127,7 @@ public class SmsForwardingService extends Service {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(getString(R.string.notification_title))
                 .setContentText(getString(R.string.notification_text))
-                .setSmallIcon(android.R.drawable.sym_def_app_icon) // Using system default icon
+                .setSmallIcon(R.drawable.ic_notification)
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)

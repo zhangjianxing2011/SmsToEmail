@@ -6,12 +6,57 @@ android {
     namespace 'com.example.smsforwarder'
     compileSdk 36
 
+    def versionPropsFile = file('version.properties')
+    def Properties versionProps = new Properties()
+    if (versionPropsFile.exists()) {
+        versionProps.load(new FileInputStream(versionPropsFile))
+    } else {
+        versionProps['VERSION_CODE'] = '1'
+        versionProps['VERSION_NAME'] = '1.0.0'
+    }
+
+    // Check if we are running an actual build task to prevent double incrementing on IDE sync
+    def runTasks = gradle.startParameter.taskNames
+    boolean isBuilding = runTasks.any { it.contains("assemble") || it.contains("bundle") || it.contains("generate") }
+
+    int currentVersionCode = versionProps['VERSION_CODE'].toInteger()
+    String currentVersionName = versionProps['VERSION_NAME']
+
+    if (isBuilding) {
+        def parts = currentVersionName.split('\\.')
+        int major = 1
+        int minor = 0
+        int patch = 0
+        if (parts.length >= 3) {
+            major = parts[0].toInteger()
+            minor = parts[1].toInteger()
+            patch = parts[2].toInteger()
+        } else if (parts.length == 2) {
+            major = parts[0].toInteger()
+            minor = parts[1].toInteger()
+        }
+
+        patch += 1
+        if (patch >= 10) {
+            patch = 0
+            minor += 1
+        }
+
+        currentVersionCode += 1
+        currentVersionName = "${major}.${minor}.${patch}"
+
+        versionProps['VERSION_CODE'] = currentVersionCode.toString()
+        versionProps['VERSION_NAME'] = currentVersionName
+        versionProps.store(new FileOutputStream(versionPropsFile), null)
+        println "Auto-incremented build version to: ${currentVersionName} (Code: ${currentVersionCode})"
+    }
+
     defaultConfig {
         applicationId "com.example.smsforwarder"
         minSdk 30
         targetSdk 36
-        versionCode 1
-        versionName "1.0"
+        versionCode currentVersionCode
+        versionName currentVersionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

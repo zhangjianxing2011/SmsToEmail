@@ -67,6 +67,8 @@
     <string name="log_service_start">Service started manually.</string>
     <string name="log_service_stop">Service stopped manually.</string>
     <string name="log_sms_received">Received SMS from %1$s, forwarding...</string>
+    <string name="log_sms_received_raw">Received SMS from %1$s: %2$s</string>
+    <string name="log_sms_received_raw_disabled">Received SMS from %1$s: %2$s (Forwarding service is OFF)</string>
     <string name="log_sms_success">Successfully forwarded SMS from %1$s</string>
     <string name="log_sms_failed">Failed to forward SMS from %1$s: %2$s</string>
     <string name="log_sms_incomplete">Failed to forward SMS from %1$s: Email settings incomplete.</string>

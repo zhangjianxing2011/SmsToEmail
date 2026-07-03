@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SMS Forwarder</string>
+    
+    <!-- Service Control -->
+    <string name="card_title_service">Service Control</string>
+    <string name="status_running">Status: Running</string>
+    <string name="status_stopped">Status: Stopped</string>
+    <string name="btn_grant_permissions">Grant Permissions</string>
+    <string name="permission_hint">* SMS &amp; Notification permissions are required.</string>
+    
+    <!-- SMTP Settings -->
+    <string name="card_title_smtp">SMTP Email Settings</string>
+    <string name="hint_smtp_host">SMTP Server (e.g. smtp.gmail.com)</string>
+    <string name="hint_smtp_port">SMTP Port (SSL: 465, TLS/STARTTLS: 587)</string>
+    <string name="hint_sender_email">Sender Email Address</string>
+    <string name="hint_sender_password">App Password / Auth Token</string>
+    <string name="hint_recipient_email">Recipient Email Address (separate multiple with comma)</string>
+    <string name="btn_battery_optimization">Ignore Battery Optimizations (Recommended)</string>
+    <string name="toast_battery_ignored">Battery optimizations already ignored.</string>
+    <string name="label_use_ssl">Use SSL/TLS Connection</string>
+    <string name="btn_save">Save</string>
+    <string name="btn_test">Send Test</string>
+    <string name="btn_test_sending">Sending...</string>
+    
+    <!-- Logs -->
+    <string name="card_title_logs">Activity Logs</string>
+    <string name="btn_clear">Clear</string>
+    <string name="logs_empty">No activity logs yet...</string>
+    
+    <!-- Toasts & Messages -->
+    <string name="toast_save_success">Configuration saved successfully!</string>
+    <string name="toast_save_failed">Please fill in all SMTP fields.</string>
+    <string name="toast_grant_first">Please grant all permissions first!</string>
+    <string name="toast_configure_first">Please configure SMTP settings first!</string>
+    <string name="toast_permissions_granted">All permissions granted!</string>
+    <string name="toast_permissions_denied">Permissions denied. App functionality will be restricted.</string>
+    <string name="toast_test_success">Test email sent successfully!</string>
+    <string name="toast_test_failed">Failed to send: %1$s</string>
+    <string name="toast_logs_cleared">Logs cleared.</string>
+    <string name="toast_service_start_failed">Failed to start service: %1$s</string>
+    <string name="email_subject">[SMS Forwarder] From: %1$s</string>
+    <string name="email_body">You have received a new SMS.\n\nSender: %1$s\nTime: %2$s\nContent:\n%3$s\n\n--- Sent by SMS Forwarder app ---</string>
+    <string name="hint_recipient_email_item">Recipient Email</string>
+    
+    <!-- Telegram Bot Settings -->
+    <string name="card_title_tg">Telegram Bot Settings</string>
+    <string name="hint_tg_token">Telegram Bot Token (e.g. 123456:ABC...)</string>
+    <string name="hint_tg_chat_id">Telegram Chat ID (e.g. -100... or user ID)</string>
+    <string name="label_enable_tg">Enable Telegram Forwarding</string>
+    <string name="btn_test_tg">Send Test TG</string>
+    <string name="btn_test_tg_sending">Sending TG...</string>
+    <string name="toast_tg_test_success">Telegram test message sent successfully!</string>
+    <string name="toast_tg_test_failed">Telegram test failed: %1$s</string>
+    <string name="log_tg_test_trigger">Triggering Telegram test message to %1$s</string>
+    <string name="log_tg_test_success">Telegram test message sent successfully.</string>
+    <string name="log_tg_test_failed">Telegram test failed: %1$s</string>
+    <string name="log_sms_received_tg">Forwarding SMS from %1$s to Telegram...</string>
+    <string name="log_sms_success_tg">Successfully forwarded SMS from %1$s to Telegram</string>
+    <string name="log_sms_failed_tg">Failed to forward SMS from %1$s to Telegram: %2$s</string>
+    <string name="log_sms_incomplete_tg">Failed to forward SMS from %1$s to Telegram: Telegram settings incomplete.</string>
+    
+    <!-- Logs System (Formatting) -->
+    <string name="log_test_trigger">Triggering test email to %1$s</string>
+    <string name="log_test_success">Test email sent successfully.</string>
+    <string name="log_test_failed">Test email failed: %1$s</string>
+    <string name="log_service_start">Service started manually.</string>
+    <string name="log_service_stop">Service stopped manually.</string>
+    <string name="log_sms_received">Received SMS from %1$s, forwarding...</string>
+    <string name="log_sms_success">Successfully forwarded SMS from %1$s</string>
+    <string name="log_sms_failed">Failed to forward SMS from %1$s: %2$s</string>
+    <string name="log_sms_incomplete">Failed to forward SMS from %1$s: Email settings incomplete.</string>
+    <string name="log_sms_error">Error receiving SMS: %1$s</string>
+    <string name="log_boot_detected">Device booted. SMS Forwarding Service restarted automatically.</string>
+    <string name="log_boot_failed">Boot auto-start failed: %1$s</string>
+    
+    <!-- Foreground Notification -->
+    <string name="notification_title">SMS Forwarder is Active</string>
+    <string name="notification_text">Listening for incoming SMS messages in real-time...</string>
+    <string name="channel_name">SMS Forwarder Monitor</string>
+    <string name="channel_desc">Keeps the SMS Forwarder active in the background</string>
+</resources>

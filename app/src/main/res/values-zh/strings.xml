@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">短信转发器</string>
+    
+    <!-- Service Control -->
+    <string name="card_title_service">服务控制</string>
+    <string name="status_running">状态: 正在运行</string>
+    <string name="status_stopped">状态: 已停止</string>
+    <string name="btn_grant_permissions">授予所需权限</string>
+    <string name="permission_hint">* 需要短信接收/读取和通知显示权限。</string>
+    
+    <!-- SMTP Settings -->
+    <string name="card_title_smtp">SMTP 发信设置</string>
+    <string name="hint_smtp_host">SMTP 服务器 (如 smtp.qq.com)</string>
+    <string name="hint_smtp_port">SMTP 端口 (SSL: 465, TLS/STARTTLS: 587)</string>
+    <string name="hint_sender_email">发件人邮箱地址</string>
+    <string name="hint_sender_password">授权码 / 密码</string>
+    <string name="hint_recipient_email">收件人邮箱地址 (多个邮箱用逗号或分号隔开)</string>
+    <string name="btn_battery_optimization">忽略电池优化 (推荐以保证后台稳定)</string>
+    <string name="toast_battery_ignored">电池优化已忽略。</string>
+    <string name="label_use_ssl">使用 SSL/TLS 加密连接</string>
+    <string name="btn_save">保存设置</string>
+    <string name="btn_test">发送测试</string>
+    <string name="btn_test_sending">正在发送...</string>
+    
+    <!-- Logs -->
+    <string name="card_title_logs">运行日志</string>
+    <string name="btn_clear">清空日志</string>
+    <string name="logs_empty">暂无运行日志...</string>
+    
+    <!-- Toasts & Messages -->
+    <string name="toast_save_success">配置保存成功！</string>
+    <string name="toast_save_failed">请填写所有发信参数。</string>
+    <string name="toast_grant_first">请先授予所有必需的权限！</string>
+    <string name="toast_configure_first">请先配置发信邮箱信息！</string>
+    <string name="toast_permissions_granted">已授予所有权限！</string>
+    <string name="toast_permissions_denied">权限被拒绝。应用功能将受限。</string>
+    <string name="toast_test_success">测试邮件发送成功！</string>
+    <string name="toast_test_failed">发送失败: %1$s</string>
+    <string name="toast_logs_cleared">运行日志已清空。</string>
+    <string name="toast_service_start_failed">启动服务失败: %1$s</string>
+    <string name="email_subject">【短信转发器】发件人: %1$s</string>
+    <string name="email_body">您收到了一条新短信。\n\n发件人: %1$s\n时间: %2$s\n内容:\n%3$s\n\n--- 来自短信转发器应用 ---</string>
+    <string name="hint_recipient_email_item">收件人邮箱</string>
+    
+    <!-- Telegram Bot Settings -->
+    <string name="card_title_tg">Telegram 机器人设置</string>
+    <string name="hint_tg_token">机器人 Token (如 123456:ABC...)</string>
+    <string name="hint_tg_chat_id">聊天 ID/频道 ID (如 -100... 或个人 ID)</string>
+    <string name="label_enable_tg">启用 Telegram 转发</string>
+    <string name="btn_test_tg">发送测试 TG</string>
+    <string name="btn_test_tg_sending">正在发送 TG...</string>
+    <string name="toast_tg_test_success">Telegram 测试消息发送成功！</string>
+    <string name="toast_tg_test_failed">Telegram 测试发送失败: %1$s</string>
+    <string name="log_tg_test_trigger">触发 Telegram 测试消息发送至 %1$s</string>
+    <string name="log_tg_test_success">Telegram 测试消息发送成功。</string>
+    <string name="log_tg_test_failed">Telegram 测试发送失败: %1$s</string>
+    <string name="log_sms_received_tg">正在转发来自 %1$s 的短信至 Telegram...</string>
+    <string name="log_sms_success_tg">成功转发来自 %1$s 的短信至 Telegram</string>
+    <string name="log_sms_failed_tg">转发来自 %1$s 的短信至 Telegram 失败: %2$s</string>
+    <string name="log_sms_incomplete_tg">转发来自 %1$s 的短信至 Telegram 失败: Telegram 配置不完整。</string>
+    
+    <!-- Logs System (Formatting) -->
+    <string name="log_test_trigger">触发测试邮件发送至 %1$s</string>
+    <string name="log_test_success">测试邮件发送成功。</string>
+    <string name="log_test_failed">测试邮件发送失败: %1$s</string>
+    <string name="log_service_start">服务手动启动。</string>
+    <string name="log_service_stop">服务手动停止。</string>
+    <string name="log_sms_received">收到来自 %1$s 的短信，正在转发...</string>
+    <string name="log_sms_success">成功转发来自 %1$s 的短信</string>
+    <string name="log_sms_failed">转发来自 %1$s 的短信失败: %2$s</string>
+    <string name="log_sms_incomplete">转发来自 %1$s 的短信失败: 发信参数配置不完整。</string>
+    <string name="log_sms_error">接收短信时出错: %1$s</string>
+    <string name="log_boot_detected">设备已重启。短信转发服务已自动恢复运行。</string>
+    <string name="log_boot_failed">开机自动启动服务失败: %1$s</string>
+    
+    <!-- Foreground Notification -->
+    <string name="notification_title">短信转发服务运行中</string>
+    <string name="notification_text">正在后台实时监听短信事件...</string>
+    <string name="channel_name">短信转发监听服务</string>
+    <string name="channel_desc">保持短信转发服务在后台运行</string>
+</resources>

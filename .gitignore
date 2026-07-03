@@ -1,0 +1,34 @@
+# Built artifacts
+build/
+app/build/
+*.apk
+*.aar
+*.apks
+
+# Gradle directories
+.gradle/
+gradle-app.setting
+
+# Local developer configuration files
+local.properties
+.navigation/
+
+# Keystore certificates (Security: do not check in passwords/keys)
+*.jks
+*.keystore
+
+# Log files
+*.log
+
+# IntelliJ IDEA/Android Studio files
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+
+# System specific files
+.DS_Store
+Thumbs.db

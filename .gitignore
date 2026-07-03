@@ -1,7 +1,6 @@
 # Built artifacts
 build/
 app/build/
-*.apk
 *.aar
 *.apks
 
@@ -14,7 +13,6 @@ local.properties
 .navigation/
 
 # Keystore certificates (Security: do not check in passwords/keys)
-*.jks
 *.keystore
 
 # Log files

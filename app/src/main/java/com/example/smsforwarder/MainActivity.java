@@ -87,18 +87,25 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Optimize system status bar icons readability (light/dark adaptive icons)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            View decorView = getWindow().getDecorView();
-            int flags = decorView.getSystemUiVisibility();
-            int nightModeFlags = getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
-            if (nightModeFlags == android.content.res.Configuration.UI_MODE_NIGHT_NO) {
-                // Light theme: status bar background is light, use dark icons
-                flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-            } else {
-                // Dark theme: status bar background is dark, use light icons
-                flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
+            android.view.WindowInsetsController controller = getWindow().getInsetsController();
+            if (controller != null) {
+                int nightModeFlags = getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+                if (nightModeFlags == android.content.res.Configuration.UI_MODE_NIGHT_NO) {
+                    // Light theme: status bar background is light, use dark icons
+                    controller.setSystemBarsAppearance(
+                            android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+                            android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+                    );
+                } else {
+                    // Dark theme: status bar background is dark, use light icons
+                    controller.setSystemBarsAppearance(
+                            0,
+                            android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+                    );
+                }
             }
-            decorView.setSystemUiVisibility(flags);
         }
 
         configManager = new ConfigManager(this);
@@ -595,13 +602,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        if (manager != null) {
-            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-                if (serviceClass.getName().equals(service.service.getClassName())) {
-                    return true;
-                }
-            }
+        if (serviceClass.equals(SmsForwardingService.class)) {
+            return SmsForwardingService.isRunning;
         }
         return false;
     }

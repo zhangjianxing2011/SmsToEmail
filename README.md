@@ -149,9 +149,9 @@ android {
     signingConfigs {
         release {
             storeFile file("sms_forwarder.jks")
-            storePassword "你设置的密钥库密码"
-            keyAlias "你设置的证书别名(如smskey)"
-            keyPassword "你设置的密钥密码"
+            storePassword "123456"
+            keyAlias "smskey"
+            keyPassword "123456"
         }
     }
 

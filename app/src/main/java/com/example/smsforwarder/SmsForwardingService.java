@@ -23,10 +23,13 @@ public class SmsForwardingService extends Service {
     private static final String CHANNEL_ID = "SMSForwarderChannel";
     private static final int NOTIFICATION_ID = 1;
 
+    public static volatile boolean isRunning = false;
+
     @Override
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "Service onCreate");
+        isRunning = true;
         createNotificationChannel();
     }
 
@@ -55,6 +58,7 @@ public class SmsForwardingService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "Service onDestroy");
+        isRunning = false;
         super.onDestroy();
     }
 

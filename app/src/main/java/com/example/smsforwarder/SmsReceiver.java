@@ -26,6 +26,7 @@ public class SmsReceiver extends BroadcastReceiver {
     private static final Map<String, Long> processedMessagesCache = new HashMap<>();
     private static final long CACHE_EXPIRATION_TIME = 10000; // 10 seconds window
 
+    @SuppressWarnings("deprecation")
     @Override
     public void onReceive(final Context context, Intent intent) {
         if (intent == null || !ACTION_SMS_RECEIVED.equals(intent.getAction())) {
@@ -57,11 +58,7 @@ public class SmsReceiver extends BroadcastReceiver {
 
             for (Object pdu : pdus) {
                 SmsMessage smsMessage;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    smsMessage = SmsMessage.createFromPdu((byte[]) pdu, format);
-                } else {
-                    smsMessage = SmsMessage.createFromPdu((byte[]) pdu);
-                }
+                smsMessage = SmsMessage.createFromPdu((byte[]) pdu, format);
 
                 if (smsMessage == null) continue;
 

@@ -45,9 +45,27 @@ public class SmsReceiver extends BroadcastReceiver {
             wakeLock.acquire(30000); // 30 seconds max timeout
         }
 
+        // Acquire WifiLock to keep Wi-Fi active during screen-off/sleep mode
+        android.net.wifi.WifiManager wm = (android.net.wifi.WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        final android.net.wifi.WifiManager.WifiLock wifiLock;
+        if (wm != null) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                wifiLock = wm.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_HIGH_PERF, "SMSForwarder:SmsReceiverWifiLock");
+            } else {
+                wifiLock = wm.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL, "SMSForwarder:SmsReceiverWifiLock");
+            }
+            try {
+                wifiLock.acquire();
+            } catch (Exception e) {
+                Log.e(TAG, "Error acquiring WifiLock", e);
+            }
+        } else {
+            wifiLock = null;
+        }
+
         final AtomicInteger pendingTasks = new AtomicInteger(0);
 
-        // Helper method to safely release WakeLock
+        // Helper method to safely release WakeLock and WifiLock
         final Runnable checkReleaseWakeLock = new Runnable() {
             @Override
             public void run() {
@@ -59,6 +77,13 @@ public class SmsReceiver extends BroadcastReceiver {
                             Log.e(TAG, "Error releasing WakeLock", e);
                         }
                     }
+                    if (wifiLock != null && wifiLock.isHeld()) {
+                        try {
+                            wifiLock.release();
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error releasing WifiLock", e);
+                        }
+                    }
                 }
             }
         };
@@ -67,6 +92,9 @@ public class SmsReceiver extends BroadcastReceiver {
         if (bundle == null) {
             if (wakeLock != null && wakeLock.isHeld()) {
                 wakeLock.release();
+            }
+            if (wifiLock != null && wifiLock.isHeld()) {
+                wifiLock.release();
             }
             return;
         }
@@ -78,6 +106,9 @@ public class SmsReceiver extends BroadcastReceiver {
             if (pdus == null || pdus.length == 0) {
                 if (wakeLock != null && wakeLock.isHeld()) {
                     wakeLock.release();
+                }
+                if (wifiLock != null && wifiLock.isHeld()) {
+                    wifiLock.release();
                 }
                 return;
             }
@@ -146,28 +177,28 @@ public class SmsReceiver extends BroadcastReceiver {
 
                 // Check active delivery targets
                 boolean willSendEmail = false;
-                String host = configManager.getSmtpHost();
-                int port = configManager.getSmtpPort();
-                boolean useSsl = configManager.isUseSsl();
-                String username = configManager.getSenderEmail();
-                String password = configManager.getSenderPassword();
-                String recipient = configManager.getRecipientEmail();
+                final String host = configManager.getSmtpHost();
+                final int port = configManager.getSmtpPort();
+                final boolean useSsl = configManager.isUseSsl();
+                final String username = configManager.getSenderEmail();
+                final String password = configManager.getSenderPassword();
+                final String recipient = configManager.getRecipientEmail();
 
                 if (!host.isEmpty() && !username.isEmpty() && !password.isEmpty() && !recipient.isEmpty()) {
                     willSendEmail = true;
                 }
 
                 boolean willSendTg = false;
-                String tgToken = configManager.getTgToken();
-                String tgChatId = configManager.getTgChatId();
+                final String tgToken = configManager.getTgToken();
+                final String tgChatId = configManager.getTgChatId();
                 if (configManager.isTgEnabled() && !tgToken.isEmpty() && !tgChatId.isEmpty()) {
                     willSendTg = true;
                 }
 
                 if (willSendEmail) {
                     pendingTasks.incrementAndGet();
-                    String emailSubject = context.getString(R.string.email_subject, sender);
-                    String emailBody = context.getString(R.string.email_body, sender, formattedTime, fullBody);
+                    final String emailSubject = context.getString(R.string.email_subject, sender);
+                    final String emailBody = context.getString(R.string.email_body, sender, formattedTime, fullBody);
 
                     configManager.addLog(context.getString(R.string.log_sms_received, sender));
 
@@ -180,8 +211,10 @@ public class SmsReceiver extends BroadcastReceiver {
 
                         @Override
                         public void onFailure(Exception e) {
-                            configManager.addLog(context.getString(R.string.log_sms_failed, sender, e.getMessage()));
-                            Log.e(TAG, "Error sending email", e);
+                            configManager.addLog(context.getString(R.string.log_sms_failed, sender, e.getMessage()) + " (已加入重试队列)");
+                            Log.e(TAG, "Error sending email, queuing for retry", e);
+                            EmailRetryTask task = new EmailRetryTask(context, host, port, useSsl, username, password, recipient, emailSubject, emailBody, sender);
+                            RetryManager.getInstance(context).addTask(task);
                             checkReleaseWakeLock.run();
                         }
                     });
@@ -191,7 +224,7 @@ public class SmsReceiver extends BroadcastReceiver {
                     pendingTasks.incrementAndGet();
                     configManager.addLog(context.getString(R.string.log_sms_received_tg, sender));
 
-                    String tgMessage = "【SMS Forwarder】\nFrom: " + sender + "\nTime: " + formattedTime + "\nContent:\n" + fullBody;
+                    final String tgMessage = "【SMS Forwarder】\nFrom: " + sender + "\nTime: " + formattedTime + "\nContent:\n" + fullBody;
 
                     TelegramSender.send(tgToken, tgChatId, tgMessage, new TelegramSender.TelegramCallback() {
                         @Override
@@ -202,8 +235,10 @@ public class SmsReceiver extends BroadcastReceiver {
 
                         @Override
                         public void onFailure(Exception e) {
-                            configManager.addLog(context.getString(R.string.log_sms_failed_tg, sender, e.getMessage()));
-                            Log.e(TAG, "Error sending to Telegram", e);
+                            configManager.addLog(context.getString(R.string.log_sms_failed_tg, sender, e.getMessage()) + " (已加入重试队列)");
+                            Log.e(TAG, "Error sending to Telegram, queuing for retry", e);
+                            TelegramRetryTask task = new TelegramRetryTask(context, tgToken, tgChatId, tgMessage, sender);
+                            RetryManager.getInstance(context).addTask(task);
                             checkReleaseWakeLock.run();
                         }
                     });
@@ -216,10 +251,13 @@ public class SmsReceiver extends BroadcastReceiver {
             configManager.addLog(context.getString(R.string.log_sms_error, e.getMessage()));
         }
 
-        // If no tasks were spawned, release WakeLock immediately
+        // If no tasks were spawned, release locks immediately
         if (pendingTasks.get() == 0) {
             if (wakeLock != null && wakeLock.isHeld()) {
                 wakeLock.release();
+            }
+            if (wifiLock != null && wifiLock.isHeld()) {
+                wifiLock.release();
             }
         }
     }

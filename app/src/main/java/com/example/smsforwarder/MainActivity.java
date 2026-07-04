@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.view.MotionEvent;
+import android.widget.ScrollView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -35,6 +37,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    static {
+        try {
+            System.setProperty("java.net.preferIPv4Stack", "true");
+            System.setProperty("java.net.preferIPv6Addresses", "false");
+        } catch (Exception ignored) {}
+    }
     private static final int PERMISSION_REQUEST_CODE = 100;
 
     private TextView tvStatus;
@@ -192,6 +200,17 @@ public class MainActivity extends AppCompatActivity {
 
         tvLogs = findViewById(R.id.tv_logs);
         btnClearLogs = findViewById(R.id.btn_clear_logs);
+
+        ScrollView scrollLogs = findViewById(R.id.scroll_logs);
+        if (scrollLogs != null) {
+            scrollLogs.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    v.getParent().requestDisallowInterceptTouchEvent(true);
+                    return false;
+                }
+            });
+        }
     }
 
     private void setupSmtpAutocomplete() {
@@ -485,7 +504,8 @@ public class MainActivity extends AppCompatActivity {
         btnTgTest.setText(getString(R.string.btn_test_tg_sending));
         configManager.addLog(getString(R.string.log_tg_test_trigger, chatId));
 
-        TelegramSender.send(token, chatId, "This is a test message from SMS Forwarder app!", new TelegramSender.TelegramCallback() {
+        final String testMessage = "This is a test message from SMS Forwarder app!";
+        TelegramSender.send(token, chatId, testMessage, new TelegramSender.TelegramCallback() {
             @Override
             public void onSuccess() {
                 runOnUiThread(new Runnable() {
@@ -506,8 +526,11 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         btnTgTest.setEnabled(true);
                         btnTgTest.setText(getString(R.string.btn_test_tg));
-                        Toast.makeText(MainActivity.this, getString(R.string.toast_tg_test_failed, e.getMessage()), Toast.LENGTH_LONG).show();
-                        configManager.addLog(getString(R.string.log_tg_test_failed, e.getMessage()));
+                        Toast.makeText(MainActivity.this, getString(R.string.toast_tg_test_failed, e.getMessage()) + " (已加入重试队列)", Toast.LENGTH_LONG).show();
+                        configManager.addLog(getString(R.string.log_tg_test_failed, e.getMessage()) + " (已加入重试队列)");
+                        
+                        TelegramRetryTask task = new TelegramRetryTask(MainActivity.this, token, chatId, testMessage, "测试发送");
+                        RetryManager.getInstance(MainActivity.this).addTask(task);
                     }
                 });
             }
@@ -523,15 +546,15 @@ public class MainActivity extends AppCompatActivity {
         btnTest.setText(getString(R.string.btn_test_sending));
         configManager.addLog(getString(R.string.log_test_trigger, configManager.getRecipientEmail()));
 
-        String host = configManager.getSmtpHost();
-        int port = configManager.getSmtpPort();
-        boolean useSsl = configManager.isUseSsl();
-        String username = configManager.getSenderEmail();
-        String password = configManager.getSenderPassword();
-        String recipient = configManager.getRecipientEmail();
+        final String host = configManager.getSmtpHost();
+        final int port = configManager.getSmtpPort();
+        final boolean useSsl = configManager.isUseSsl();
+        final String username = configManager.getSenderEmail();
+        final String password = configManager.getSenderPassword();
+        final String recipient = configManager.getRecipientEmail();
 
-        String subject = "[SMS Forwarder] Test Connection";
-        String body = "This is a test email sent from the SMS Forwarder Android application.\n\n" +
+        final String subject = "[SMS Forwarder] Test Connection";
+        final String body = "This is a test email sent from the SMS Forwarder Android application.\n\n" +
                 "Your SMTP configurations are correct, and network access is working successfully!\n\n" +
                 "Timestamp: " + new java.util.Date().toString();
 
@@ -557,8 +580,12 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         btnTest.setEnabled(true);
                         btnTest.setText(getString(R.string.btn_test));
-                        configManager.addLog(getString(R.string.log_test_failed, e.getMessage()));
-                        Toast.makeText(MainActivity.this, getString(R.string.toast_test_failed, e.getMessage()), Toast.LENGTH_LONG).show();
+                        configManager.addLog(getString(R.string.log_test_failed, e.getMessage()) + " (已加入重试队列)");
+                        Toast.makeText(MainActivity.this, getString(R.string.toast_test_failed, e.getMessage()) + " (已加入重试队列)", Toast.LENGTH_LONG).show();
+                        
+                        EmailRetryTask task = new EmailRetryTask(MainActivity.this, host, port, useSsl, username, password, recipient, subject, body, "测试发送");
+                        RetryManager.getInstance(MainActivity.this).addTask(task);
+                        
                         updateLogsUI();
                     }
                 });

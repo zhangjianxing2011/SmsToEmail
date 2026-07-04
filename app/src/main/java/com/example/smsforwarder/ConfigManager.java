@@ -25,7 +25,7 @@ public class ConfigManager {
     private static final String KEY_TG_TOKEN = "tg_token";
     private static final String KEY_TG_CHAT_ID = "tg_chat_id";
     private static final String KEY_TG_ENABLED = "tg_enabled";
-    private static final int MAX_LOGS = 50;
+    private static final int MAX_LOGS = 1500;
 
     private final SharedPreferences prefs;
 

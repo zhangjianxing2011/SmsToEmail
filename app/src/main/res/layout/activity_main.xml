@@ -1,30 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
+    android:orientation="vertical"
     android:background="?android:attr/windowBackground"
     tools:context=".MainActivity">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none">
 
-        <!-- App Header Title -->
-        <TextView
-            android:id="@+id/app_title"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/app_name"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:textColor="?android:attr/textColorPrimary"
-            android:layout_marginBottom="16dp"
-            android:gravity="center_horizontal" />
+            android:orientation="vertical"
+            android:padding="16dp">
 
         <!-- Card 1: Service Controls -->
         <com.google.android.material.card.MaterialCardView
@@ -480,10 +475,11 @@
 
                 <!-- Scrollable Log Container -->
                 <ScrollView
+                    android:id="@+id/scroll_logs"
                     android:layout_width="match_parent"
-                    android:layout_height="180dp"
+                    android:layout_height="360dp"
                     android:background="#212529"
-                    android:padding="8dp">
+                    android:padding="4dp">
 
                     <TextView
                         android:id="@+id/tv_logs"
@@ -499,4 +495,18 @@
         </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
-</ScrollView>
+    </ScrollView>
+
+    <!-- App Footer Title & Version -->
+    <TextView
+        android:id="@+id/app_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textSize="12sp"
+        android:textColor="?android:attr/textColorSecondary"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        android:gravity="center_horizontal" />
+
+</LinearLayout>

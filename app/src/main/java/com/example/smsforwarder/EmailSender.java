@@ -15,6 +15,13 @@ import javax.mail.internet.MimeMessage;
  * Handles sending emails asynchronously using JavaMail.
  */
 public class EmailSender {
+    static {
+        try {
+            System.setProperty("java.net.preferIPv4Stack", "true");
+            System.setProperty("java.net.preferIPv6Addresses", "false");
+        } catch (Exception ignored) {}
+    }
+
     // Thread pool to send emails asynchronously without blocking the UI thread
     private static final ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -53,6 +60,7 @@ public class EmailSender {
                     // Set timeout values to avoid long hangs in case of poor network
                     props.put("mail.smtp.connectiontimeout", "10000");
                     props.put("mail.smtp.timeout", "10000");
+                    props.put("mail.smtp.writetimeout", "10000");
 
                     Session session = Session.getInstance(props, new Authenticator() {
                         @Override

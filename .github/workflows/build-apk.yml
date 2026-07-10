@@ -38,6 +38,9 @@ jobs:
       - name: Remove local Java home config for CI
         run: sed -i '/org.gradle.java.home/d' gradle.properties
 
+      - name: Install Android SDK platform 36
+        run: echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platforms;android-36"
+
       - name: Build Release APK
         run: ./gradlew assembleRelease
 

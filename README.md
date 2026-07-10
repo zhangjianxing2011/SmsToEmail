@@ -1,6 +1,7 @@
-# SMS Forwarder (短信转发邮箱) Android 应用
+# SMS Forwarder (短信转发邮箱) Android 应用 
 
-这是一个专门为 Android 11 及以上版本 (API 30+) 设计的轻量级短信转发工具。它能够在后台实时监控手机收到的短信，并通过 SMTP 协议自动将其转发到指定的电子邮箱中。
+这是一个专门为 Android 11 及以上版本 (API 30+) 设计的轻量级短信转发工具。它能够在后台实时监控手机收到的短信，并通过 SMTP 协议自动将其转发到指定的电子邮箱中。  
+[apk下载链接](https://github.com/zhangjianxing2011/SmsToEmail/releases)
 
 ---
 

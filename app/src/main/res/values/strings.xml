@@ -59,6 +59,28 @@
     <string name="log_sms_success_tg">Successfully forwarded SMS from %1$s to Telegram</string>
     <string name="log_sms_failed_tg">Failed to forward SMS from %1$s to Telegram: %2$s</string>
     <string name="log_sms_incomplete_tg">Failed to forward SMS from %1$s to Telegram: Telegram settings incomplete.</string>
+
+    <!-- Webhook / API Push Settings -->
+    <string name="card_title_api">Webhook / API Push Settings</string>
+    <string name="hint_api_url">API Endpoint URL</string>
+    <string name="hint_api_auth_key">authKey Header Token</string>
+    <string name="hint_api_from">From Name / Address (Optional)</string>
+    <string name="hint_api_sender_email">senderEmail (Optional)</string>
+    <string name="hint_api_to">To Recipient (Optional)</string>
+    <string name="hint_api_subject">Subject (Optional, use %s for sender)</string>
+    <string name="label_enable_api">Enable Webhook / API Push</string>
+    <string name="btn_test_api">Send Test API</string>
+    <string name="btn_test_api_sending">Pushing API...</string>
+    <string name="toast_api_test_success">API push succeeded!</string>
+    <string name="toast_api_test_failed">API push failed: %1$s</string>
+    <string name="log_api_test_trigger">Triggering test API push to %1$s</string>
+    <string name="log_api_test_success">API test push succeeded.</string>
+    <string name="log_api_test_failed">API test push failed: %1$s</string>
+    <string name="log_sms_received_api">Pushing SMS from %1$s to API...</string>
+    <string name="log_sms_success_api">Successfully pushed SMS from %1$s to API</string>
+    <string name="log_sms_failed_api">Failed to push SMS from %1$s to API: %2$s</string>
+    <string name="log_sms_incomplete_api">Failed to push SMS to API: API settings incomplete.</string>
+    <string name="toast_configure_at_least_one">Please configure at least one forwarding channel (Email, Telegram, or API Push).</string>
     
     <!-- Logs System (Formatting) -->
     <string name="log_test_trigger">Triggering test email to %1$s</string>

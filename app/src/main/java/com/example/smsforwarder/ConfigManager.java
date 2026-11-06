@@ -25,6 +25,13 @@ public class ConfigManager {
     private static final String KEY_TG_TOKEN = "tg_token";
     private static final String KEY_TG_CHAT_ID = "tg_chat_id";
     private static final String KEY_TG_ENABLED = "tg_enabled";
+    private static final String KEY_API_ENABLED = "api_enabled";
+    private static final String KEY_API_URL = "api_url";
+    private static final String KEY_API_AUTH_KEY = "api_auth_key";
+    private static final String KEY_API_FROM = "api_from";
+    private static final String KEY_API_SENDER_EMAIL = "api_sender_email";
+    private static final String KEY_API_TO = "api_to";
+    private static final String KEY_API_SUBJECT = "api_subject";
     private static final int MAX_LOGS = 1500;
 
     private final SharedPreferences prefs;
@@ -157,5 +164,61 @@ public class ConfigManager {
 
     public void setTgEnabled(boolean val) {
         prefs.edit().putBoolean(KEY_TG_ENABLED, val).apply();
+    }
+
+    public boolean isApiEnabled() {
+        return prefs.getBoolean(KEY_API_ENABLED, false);
+    }
+
+    public void setApiEnabled(boolean val) {
+        prefs.edit().putBoolean(KEY_API_ENABLED, val).apply();
+    }
+
+    public String getApiUrl() {
+        return prefs.getString(KEY_API_URL, "");
+    }
+
+    public void setApiUrl(String val) {
+        prefs.edit().putString(KEY_API_URL, val).apply();
+    }
+
+    public String getApiAuthKey() {
+        return prefs.getString(KEY_API_AUTH_KEY, "");
+    }
+
+    public void setApiAuthKey(String val) {
+        prefs.edit().putString(KEY_API_AUTH_KEY, val).apply();
+    }
+
+    public String getApiFrom() {
+        return prefs.getString(KEY_API_FROM, "");
+    }
+
+    public void setApiFrom(String val) {
+        prefs.edit().putString(KEY_API_FROM, val).apply();
+    }
+
+    public String getApiSenderEmail() {
+        return prefs.getString(KEY_API_SENDER_EMAIL, "");
+    }
+
+    public void setApiSenderEmail(String val) {
+        prefs.edit().putString(KEY_API_SENDER_EMAIL, val).apply();
+    }
+
+    public String getApiTo() {
+        return prefs.getString(KEY_API_TO, "");
+    }
+
+    public void setApiTo(String val) {
+        prefs.edit().putString(KEY_API_TO, val).apply();
+    }
+
+    public String getApiSubject() {
+        return prefs.getString(KEY_API_SUBJECT, "");
+    }
+
+    public void setApiSubject(String val) {
+        prefs.edit().putString(KEY_API_SUBJECT, val).apply();
     }
 }

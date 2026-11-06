@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
+import org.json.JSONObject;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,6 +18,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
+import java.util.UUID;
 
 /**
  * Listens for incoming SMS broadcasts and forwards them via email if enabled.
@@ -195,6 +198,13 @@ public class SmsReceiver extends BroadcastReceiver {
                     willSendTg = true;
                 }
 
+                boolean willSendApi = false;
+                final String apiUrl = configManager.getApiUrl();
+                final String apiAuthKey = configManager.getApiAuthKey();
+                if (configManager.isApiEnabled() && !apiUrl.isEmpty()) {
+                    willSendApi = true;
+                }
+
                 if (willSendEmail) {
                     pendingTasks.incrementAndGet();
                     final String emailSubject = context.getString(R.string.email_subject, sender);
@@ -245,6 +255,98 @@ public class SmsReceiver extends BroadcastReceiver {
                 } else if (configManager.isTgEnabled()) {
                     configManager.addLog(context.getString(R.string.log_sms_incomplete_tg, sender));
                 }
+
+                if (willSendApi) {
+                    pendingTasks.incrementAndGet();
+                    configManager.addLog(context.getString(R.string.log_sms_received_api, sender));
+
+                    // Build ISO 8601 date (e.g. 2026-10-30T09:31:35.000Z)
+                    SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
+                    isoFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    String isoDate = isoFormat.format(new Date(smsTimestamp));
+
+                    // Configure Subject
+                    String subjectTemplate = configManager.getApiSubject();
+                    String finalSubject;
+                    if (subjectTemplate == null || subjectTemplate.trim().isEmpty()) {
+                        finalSubject = context.getString(R.string.email_subject, sender);
+                    } else if (subjectTemplate.contains("%s")) {
+                        try {
+                            finalSubject = String.format(subjectTemplate, sender);
+                        } catch (Exception e) {
+                            finalSubject = subjectTemplate;
+                        }
+                    } else {
+                        finalSubject = subjectTemplate;
+                    }
+
+                    // Sender Email & From
+                    String customSenderEmail = configManager.getApiSenderEmail().trim();
+                    String finalSenderEmail = customSenderEmail.isEmpty() ? sender : customSenderEmail;
+
+                    String customFrom = configManager.getApiFrom().trim();
+                    String finalFrom;
+                    if (!customFrom.isEmpty()) {
+                        finalFrom = customFrom;
+                    } else {
+                        finalFrom = "SMSForwarder <" + finalSenderEmail + ">";
+                    }
+
+                    // To
+                    String customTo = configManager.getApiTo().trim();
+                    String finalTo;
+                    if (!customTo.isEmpty()) {
+                        finalTo = customTo;
+                    } else {
+                        String smtpRecipient = configManager.getRecipientEmail().trim();
+                        finalTo = smtpRecipient.isEmpty() ? "admin" : smtpRecipient;
+                    }
+
+                    // HTML Body
+                    String htmlBody = "<div style=\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333;\">" +
+                            "<h3 style=\"margin-top:0; color:#0d6efd;\">收到新短信通知</h3>" +
+                            "<table style=\"border-collapse: collapse; width: 100%; margin-bottom: 12px;\">" +
+                            "<tr><td style=\"padding: 4px 8px; font-weight: bold; width: 80px;\">发信人:</td><td style=\"padding: 4px 8px;\">" + escapeHtml(sender) + "</td></tr>" +
+                            "<tr><td style=\"padding: 4px 8px; font-weight: bold;\">时&nbsp;&nbsp;间:</td><td style=\"padding: 4px 8px;\">" + escapeHtml(formattedTime) + "</td></tr>" +
+                            "</table>" +
+                            "<div style=\"background: #f8f9fa; border-left: 4px solid #0d6efd; padding: 12px 16px; border-radius: 4px; font-size: 14px; white-space: pre-wrap; word-break: break-word;\">" +
+                            escapeHtml(fullBody) +
+                            "</div>" +
+                            "</div>";
+
+                    try {
+                        JSONObject emailData = new JSONObject();
+                        emailData.put("id", UUID.randomUUID().toString());
+                        emailData.put("subject", finalSubject);
+                        emailData.put("from", finalFrom);
+                        emailData.put("senderEmail", finalSenderEmail);
+                        emailData.put("to", finalTo);
+                        emailData.put("date", isoDate);
+                        emailData.put("body", htmlBody);
+                        emailData.put("plainBody", fullBody);
+
+                        ApiSender.send(apiUrl, apiAuthKey, emailData, new ApiSender.ApiCallback() {
+                            @Override
+                            public void onSuccess(String response) {
+                                configManager.addLog(context.getString(R.string.log_sms_success_api, sender));
+                                checkReleaseWakeLock.run();
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                configManager.addLog(context.getString(R.string.log_sms_failed_api, sender, e.getMessage()));
+                                Log.e(TAG, "Error pushing to API", e);
+                                checkReleaseWakeLock.run();
+                            }
+                        });
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error building API JSON payload", e);
+                        configManager.addLog(context.getString(R.string.log_sms_failed_api, sender, e.getMessage()));
+                        checkReleaseWakeLock.run();
+                    }
+                } else if (configManager.isApiEnabled()) {
+                    configManager.addLog(context.getString(R.string.log_sms_incomplete_api, sender));
+                }
             }
         } catch (Exception e) {
             Log.e(TAG, "Error processing SMS broadcast", e);
@@ -260,5 +362,15 @@ public class SmsReceiver extends BroadcastReceiver {
                 wifiLock.release();
             }
         }
+    }
+
+    private static String escapeHtml(String text) {
+        if (text == null) return "";
+        return text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;")
+                .replace("\n", "<br/>");
     }
 }

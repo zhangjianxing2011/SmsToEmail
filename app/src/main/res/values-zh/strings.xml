@@ -59,6 +59,28 @@
     <string name="log_sms_success_tg">成功转发来自 %1$s 的短信至 Telegram</string>
     <string name="log_sms_failed_tg">转发来自 %1$s 的短信至 Telegram 失败: %2$s</string>
     <string name="log_sms_incomplete_tg">转发来自 %1$s 的短信至 Telegram 失败: Telegram 配置不完整。</string>
+
+    <!-- Webhook / API Push Settings -->
+    <string name="card_title_api">Webhook / API 接口推送设置</string>
+    <string name="hint_api_url">API 接口地址 (URL)</string>
+    <string name="hint_api_auth_key">authKey 授权密钥 (Header)</string>
+    <string name="hint_api_from">发信人名称/From (选填，默认带号码)</string>
+    <string name="hint_api_sender_email">发信人邮箱/senderEmail (选填)</string>
+    <string name="hint_api_to">收件人/To (选填)</string>
+    <string name="hint_api_subject">主题/Subject (选填，%s 代表发件号码)</string>
+    <string name="label_enable_api">启用 Webhook / API 接口推送</string>
+    <string name="btn_test_api">发送测试 API</string>
+    <string name="btn_test_api_sending">正在推送 API...</string>
+    <string name="toast_api_test_success">API 测试推送成功！</string>
+    <string name="toast_api_test_failed">API 测试推送失败: %1$s</string>
+    <string name="log_api_test_trigger">触发 API 测试推送至 %1$s</string>
+    <string name="log_api_test_success">API 测试推送成功。</string>
+    <string name="log_api_test_failed">API 测试推送失败: %1$s</string>
+    <string name="log_sms_received_api">正在推送来自 %1$s 的短信至 API 接口...</string>
+    <string name="log_sms_success_api">成功推送来自 %1$s 的短信至 API 接口</string>
+    <string name="log_sms_failed_api">推送来自 %1$s 的短信至 API 接口失败: %2$s</string>
+    <string name="log_sms_incomplete_api">推送短信至 API 接口失败: API 配置不完整。</string>
+    <string name="toast_configure_at_least_one">请至少配置并启用一种转发通道（邮件、Telegram 或 API 接口推送）。</string>
     
     <!-- Logs System (Formatting) -->
     <string name="log_test_trigger">触发测试邮件发送至 %1$s</string>

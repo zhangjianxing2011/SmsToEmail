@@ -35,6 +35,12 @@ import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.json.JSONObject;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     static {
@@ -77,6 +83,22 @@ public class MainActivity extends AppCompatActivity {
     private SwitchCompat switchTgEnabled;
     private Button btnTgSave;
     private Button btnTgTest;
+
+    // Collapsible API Card views
+    private LinearLayout layoutApiHeader;
+    private LinearLayout layoutApiContent;
+    private ImageView ivApiArrow;
+
+    // Webhook / API Push Settings views
+    private EditText etApiUrl;
+    private EditText etApiAuthKey;
+    private EditText etApiSubject;
+    private EditText etApiFrom;
+    private EditText etApiSenderEmail;
+    private EditText etApiTo;
+    private SwitchCompat switchApiEnabled;
+    private Button btnApiSave;
+    private Button btnApiTest;
 
     private Button btnSave;
     private Button btnTest;
@@ -194,6 +216,20 @@ public class MainActivity extends AppCompatActivity {
         btnTgSave = findViewById(R.id.btn_tg_save);
         btnTgTest = findViewById(R.id.btn_tg_test);
 
+        layoutApiHeader = findViewById(R.id.layout_api_header);
+        layoutApiContent = findViewById(R.id.layout_api_content);
+        ivApiArrow = findViewById(R.id.iv_api_arrow);
+
+        etApiUrl = findViewById(R.id.et_api_url);
+        etApiAuthKey = findViewById(R.id.et_api_auth_key);
+        etApiSubject = findViewById(R.id.et_api_subject);
+        etApiFrom = findViewById(R.id.et_api_from);
+        etApiSenderEmail = findViewById(R.id.et_api_sender_email);
+        etApiTo = findViewById(R.id.et_api_to);
+        switchApiEnabled = findViewById(R.id.switch_api_enabled);
+        btnApiSave = findViewById(R.id.btn_api_save);
+        btnApiTest = findViewById(R.id.btn_api_test);
+
         btnSave = findViewById(R.id.btn_save);
         btnTest = findViewById(R.id.btn_test);
         btnBatteryOptimization = findViewById(R.id.btn_battery_optimization);
@@ -276,6 +312,15 @@ public class MainActivity extends AppCompatActivity {
         etTgToken.setText(configManager.getTgToken());
         etTgChatId.setText(configManager.getTgChatId());
         switchTgEnabled.setChecked(configManager.isTgEnabled());
+
+        // Load Webhook / API Push settings
+        etApiUrl.setText(configManager.getApiUrl());
+        etApiAuthKey.setText(configManager.getApiAuthKey());
+        etApiSubject.setText(configManager.getApiSubject());
+        etApiFrom.setText(configManager.getApiFrom());
+        etApiSenderEmail.setText(configManager.getApiSenderEmail());
+        etApiTo.setText(configManager.getApiTo());
+        switchApiEnabled.setChecked(configManager.isApiEnabled());
     }
 
     private void addRecipientRow(String email) {
@@ -325,6 +370,20 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     layoutTgContent.setVisibility(View.VISIBLE);
                     ivTgArrow.setImageResource(R.drawable.ic_chevron_up);
+                }
+            }
+        });
+
+        // Collapsible API content toggle
+        layoutApiHeader.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (layoutApiContent.getVisibility() == View.VISIBLE) {
+                    layoutApiContent.setVisibility(View.GONE);
+                    ivApiArrow.setImageResource(R.drawable.ic_chevron_down);
+                } else {
+                    layoutApiContent.setVisibility(View.VISIBLE);
+                    ivApiArrow.setImageResource(R.drawable.ic_chevron_up);
                 }
             }
         });
@@ -382,13 +441,17 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
 
-                    if (!validateInputs()) {
+                    if (!hasForwardingChannelConfigured()) {
                         switchService.setChecked(false);
-                        Toast.makeText(MainActivity.this, getString(R.string.toast_configure_first), Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, getString(R.string.toast_configure_at_least_one), Toast.LENGTH_LONG).show();
                         return;
                     }
 
-                    saveSettings();
+                    if (validateSmtpInputs()) {
+                        saveSettings();
+                    }
+                    saveTelegramSettings();
+                    saveApiSettings();
                     configManager.setEnabled(true);
                     startForwardingService();
                     configManager.addLog(getString(R.string.log_service_start));
@@ -415,6 +478,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 sendTestTelegram();
+            }
+        });
+
+        // Webhook / API Push Save/Test listeners
+        btnApiSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveApiSettings();
+                Toast.makeText(MainActivity.this, getString(R.string.toast_save_success), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnApiTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendTestApi();
             }
         });
 
@@ -464,6 +543,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean validateInputs() {
+        return validateSmtpInputs();
+    }
+
+    private boolean validateSmtpInputs() {
         if (etSmtpHost.getText().toString().trim().isEmpty() ||
             etSmtpPort.getText().toString().trim().isEmpty() ||
             etSenderEmail.getText().toString().trim().isEmpty() ||
@@ -484,6 +567,111 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return hasValidRecipient;
+    }
+
+    private boolean hasForwardingChannelConfigured() {
+        boolean smtpConfigured = validateSmtpInputs();
+        boolean tgConfigured = switchTgEnabled.isChecked() &&
+                !etTgToken.getText().toString().trim().isEmpty() &&
+                !etTgChatId.getText().toString().trim().isEmpty();
+        boolean apiConfigured = switchApiEnabled.isChecked() &&
+                !etApiUrl.getText().toString().trim().isEmpty();
+        return smtpConfigured || tgConfigured || apiConfigured;
+    }
+
+    private void saveApiSettings() {
+        configManager.setApiUrl(etApiUrl.getText().toString().trim());
+        configManager.setApiAuthKey(etApiAuthKey.getText().toString().trim());
+        configManager.setApiSubject(etApiSubject.getText().toString().trim());
+        configManager.setApiFrom(etApiFrom.getText().toString().trim());
+        configManager.setApiSenderEmail(etApiSenderEmail.getText().toString().trim());
+        configManager.setApiTo(etApiTo.getText().toString().trim());
+        configManager.setApiEnabled(switchApiEnabled.isChecked());
+    }
+
+    private void sendTestApi() {
+        final String apiUrl = etApiUrl.getText().toString().trim();
+        final String authKey = etApiAuthKey.getText().toString().trim();
+        if (apiUrl.isEmpty()) {
+            Toast.makeText(this, "Please configure API URL first", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        btnApiTest.setEnabled(false);
+        btnApiTest.setText(getString(R.string.btn_test_api_sending));
+        configManager.addLog(getString(R.string.log_api_test_trigger, apiUrl));
+
+        SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
+        isoFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        String isoDate = isoFormat.format(new Date());
+
+        String customSubject = etApiSubject.getText().toString().trim();
+        String testSender = "10086";
+        String finalSubject = customSubject.isEmpty()
+                ? "【测试推送】SMS Forwarder API Test"
+                : (customSubject.contains("%s") ? String.format(customSubject, testSender) : customSubject);
+
+        String customFrom = etApiFrom.getText().toString().trim();
+        String customSenderEmail = etApiSenderEmail.getText().toString().trim();
+        String finalSenderEmail = customSenderEmail.isEmpty() ? "test@smsforwarder.local" : customSenderEmail;
+        String finalFrom = customFrom.isEmpty() ? "SMS Forwarder <" + finalSenderEmail + ">" : customFrom;
+
+        String customTo = etApiTo.getText().toString().trim();
+        String finalTo = customTo.isEmpty() ? "admin@example.com" : customTo;
+
+        String plainBody = "This is a test notification message pushed from the SMS Forwarder application.";
+        String htmlBody = "<div style=\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333;\">" +
+                "<h3 style=\"margin-top:0; color:#0d6efd;\">SMS Forwarder 测试通知</h3>" +
+                "<p>这是一条来自 <strong>SMS Forwarder</strong> 的测试推送消息，验证接口连通性与参数格式正常！</p>" +
+                "</div>";
+
+        try {
+            JSONObject emailData = new JSONObject();
+            emailData.put("id", UUID.randomUUID().toString());
+            emailData.put("subject", finalSubject);
+            emailData.put("from", finalFrom);
+            emailData.put("senderEmail", finalSenderEmail);
+            emailData.put("to", finalTo);
+            emailData.put("date", isoDate);
+            emailData.put("body", htmlBody);
+            emailData.put("plainBody", plainBody);
+
+            ApiSender.send(apiUrl, authKey, emailData, new ApiSender.ApiCallback() {
+                @Override
+                public void onSuccess(final String response) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            btnApiTest.setEnabled(true);
+                            btnApiTest.setText(getString(R.string.btn_test_api));
+                            Toast.makeText(MainActivity.this, getString(R.string.toast_api_test_success), Toast.LENGTH_SHORT).show();
+                            configManager.addLog(getString(R.string.log_api_test_success));
+                            updateLogsUI();
+                        }
+                    });
+                }
+
+                @Override
+                public void onFailure(final Exception e) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            btnApiTest.setEnabled(true);
+                            btnApiTest.setText(getString(R.string.btn_test_api));
+                            Toast.makeText(MainActivity.this, getString(R.string.toast_api_test_failed, e.getMessage()), Toast.LENGTH_LONG).show();
+                            configManager.addLog(getString(R.string.log_api_test_failed, e.getMessage()));
+                            updateLogsUI();
+                        }
+                    });
+                }
+            });
+        } catch (Exception e) {
+            btnApiTest.setEnabled(true);
+            btnApiTest.setText(getString(R.string.btn_test_api));
+            Toast.makeText(MainActivity.this, getString(R.string.toast_api_test_failed, e.getMessage()), Toast.LENGTH_LONG).show();
+            configManager.addLog(getString(R.string.log_api_test_failed, e.getMessage()));
+            updateLogsUI();
+        }
     }
 
     private void saveTelegramSettings() {
